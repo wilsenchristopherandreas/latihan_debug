@@ -22,6 +22,20 @@
         </div>
     </div>
 
+
+@if (session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+
+@if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+
     <div class="table-responsive">
         <table class="table table-custom mb-0">
             <thead>

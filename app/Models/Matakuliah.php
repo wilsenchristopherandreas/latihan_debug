@@ -8,8 +8,13 @@ class Matakuliah extends Model
 {
     protected $fillable = [
         'kode',
-        'nama_matakuliah'
+        'nama_matakuliah',
     ];
 
     protected $table = 'matakuliah';
+
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class, 'matakuliah_id');
+    }
 }
