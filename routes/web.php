@@ -1,26 +1,41 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\AbsensiController;
 
-Route::get('/', [AbsensiController::class, 'index']);
+// Hanya bisa diakses kalau belum login
+Route::middleware('guest')->group(function () {
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
-Route::get('/mata-kuliah', [MataKuliahController::class, 'index'])->name('matkul.index');
-Route::get('/mata-kuliah/create', [MataKuliahController::class, 'create'])->name('matkul.create');
-Route::post('/mata-kuliah', [MataKuliahController::class, 'store'])->name('matkul.store');
-Route::get('/mata-kuliah/{id}/edit', [MataKuliahController::class, 'edit'])->name('matkul.edit');
-Route::put('/mata-kuliah/{id}', [MataKuliahController::class, 'update'])->name('matkul.update');
-Route::delete('/mata-kuliah/{id}', [MataKuliahController::class, 'destroy'])->name('matkul.destroy');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+});
 
-Route::get('/mahasiswa', [MahasiswaController::class, 'index'])->name('mahasiswa.index');
-Route::get('/mahasiswa/create', [MahasiswaController::class, 'create'])->name('mahasiswa.create');
-Route::post('/mahasiswa', [MahasiswaController::class, 'store'])->name('mahasiswa.store');
-Route::get('/mahasiswa/{id}/edit', [MahasiswaController::class, 'edit'])->name('mahasiswa.edit');
-Route::put('/mahasiswa/{id}', [MahasiswaController::class, 'update'])->name('mahasiswa.update');
-Route::delete('/mahasiswa/{id}', [MahasiswaController::class, 'destroy'])->name('mahasiswa.destroy');
+// Hanya bisa diakses kalau sudah login
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
-Route::get('/absensi/create', [AbsensiController::class, 'create'])->name('absensi.create');
-Route::post('/absensi', [AbsensiController::class, 'store'])->name('absensi.store');
+    Route::get('/', [AbsensiController::class, 'index']);
+
+    Route::get('/mata-kuliah', [MataKuliahController::class, 'index'])->name('matkul.index');
+    Route::get('/mata-kuliah/create', [MataKuliahController::class, 'create'])->name('matkul.create');
+    Route::post('/mata-kuliah', [MataKuliahController::class, 'store'])->name('matkul.store');
+    Route::get('/mata-kuliah/{id}/edit', [MataKuliahController::class, 'edit'])->name('matkul.edit');
+    Route::put('/mata-kuliah/{id}', [MataKuliahController::class, 'update'])->name('matkul.update');
+    Route::delete('/mata-kuliah/{id}', [MataKuliahController::class, 'destroy'])->name('matkul.destroy');
+
+    Route::get('/mahasiswa', [MahasiswaController::class, 'index'])->name('mahasiswa.index');
+    Route::get('/mahasiswa/create', [MahasiswaController::class, 'create'])->name('mahasiswa.create');
+    Route::post('/mahasiswa', [MahasiswaController::class, 'store'])->name('mahasiswa.store');
+    Route::get('/mahasiswa/{id}/edit', [MahasiswaController::class, 'edit'])->name('mahasiswa.edit');
+    Route::put('/mahasiswa/{id}', [MahasiswaController::class, 'update'])->name('mahasiswa.update');
+    Route::delete('/mahasiswa/{id}', [MahasiswaController::class, 'destroy'])->name('mahasiswa.destroy');
+
+    Route::get('/absensi', [AbsensiController::class, 'index'])->name('absensi.index');
+    Route::get('/absensi/create', [AbsensiController::class, 'create'])->name('absensi.create');
+    Route::post('/absensi', [AbsensiController::class, 'store'])->name('absensi.store');
+});
