@@ -271,17 +271,6 @@
 
         .field-hint { margin-top: .4rem; color: var(--muted); font-size: .8rem; }
 
-        .notice {
-            display: flex;
-            gap: .6rem;
-            align-items: center;
-            padding: .8rem 1rem;
-            border-radius: .8rem;
-            background: #e8f6ee;
-            color: #146c43;
-            font-size: .9rem;
-            margin-bottom: 1.5rem;
-        }
 
         .btn-auth,
         .btn-ghost-auth {
@@ -331,8 +320,114 @@
         .switch-link a { color: var(--blue); font-weight: 600; text-decoration: none; }
         .switch-link a:hover { text-decoration: underline; }
 
+
+        /* ---------- Popup notifikasi (toast) ---------- */
+        .toast-region {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 1080;
+            width: min(380px, calc(100vw - 2rem));
+            pointer-events: none;
+        }
+
+        @media (max-width: 575.98px) {
+            .toast-region { top: 1rem; left: 1rem; right: 1rem; width: auto; }
+        }
+
+        .toast-card {
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-start;
+            gap: .85rem;
+            padding: 1rem 1rem 1.2rem;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 1rem;
+            box-shadow: 0 22px 40px -14px rgba(15, 27, 51, .3), 0 2px 6px rgba(15, 27, 51, .06);
+            animation: toast-in .45s cubic-bezier(.2, .9, .25, 1.1) both;
+        }
+
+        .toast-card.is-leaving { animation: toast-out .25s ease-in both; }
+
+        .toast-icon {
+            flex: none;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: grid;
+            place-items: center;
+            border-radius: .85rem;
+            font-size: 1.2rem;
+        }
+
+        .toast-error .toast-icon   { background: #fdecec; color: #d92d20; }
+        .toast-success .toast-icon { background: #e6f6ec; color: #12803a; }
+
+        .toast-body { flex: 1; min-width: 0; }
+        .toast-title { margin: 0 0 .15rem; font-weight: 700; font-size: .95rem; letter-spacing: -.01em; }
+        .toast-text { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+
+        .toast-close {
+            flex: none;
+            width: 1.9rem;
+            height: 1.9rem;
+            margin: -.2rem -.2rem 0 0;
+            display: grid;
+            place-items: center;
+            border: 0;
+            border-radius: .5rem;
+            background: transparent;
+            color: #8b96ab;
+            font-size: .8rem;
+        }
+
+        .toast-close:hover { background: #f1f4f9; color: var(--text); }
+        .toast-close:focus-visible { outline: 3px solid rgba(36, 87, 245, .45); outline-offset: 1px; }
+
+        /* garis waktu di bawah toast, berhenti kalau di-hover */
+        .toast-bar {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 3px;
+            transform-origin: left;
+            animation: toast-timer 6s linear forwards;
+        }
+
+        .toast-error .toast-bar   { background: #e5484d; }
+        .toast-success .toast-bar { background: #16a34a; }
+        .toast-card:hover .toast-bar { animation-play-state: paused; }
+
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(-14px) scale(.97); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        @keyframes toast-out {
+            to { opacity: 0; transform: translateY(-10px) scale(.97); }
+        }
+
+        @keyframes toast-timer { to { transform: scaleX(0); } }
+
+        /* form bergetar sekali waktu login gagal */
+        .shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97) both; }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-2px); }
+            20%, 80% { transform: translateX(4px); }
+            30%, 50%, 70% { transform: translateX(-7px); }
+            40%, 60% { transform: translateX(7px); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .sheet-badge { animation: none; }
+            .sheet-badge,
+            .toast-card,
+            .toast-bar,
+            .shake { animation: none; }
+            .toast-bar { display: none; }
             * { transition: none !important; }
         }
     </style>
@@ -398,6 +493,41 @@
         </main>
     </div>
 
+    @php
+        $toast = null;
+        if (session('toast_error')) {
+            $toast = [
+                'type' => 'error',
+                'icon' => 'bi-shield-exclamation',
+                'title' => session('toast_title', 'Ada yang salah'),
+                'text' => session('toast_error'),
+            ];
+        } elseif (session('success')) {
+            $toast = [
+                'type' => 'success',
+                'icon' => 'bi-check-lg',
+                'title' => 'Berhasil',
+                'text' => session('success'),
+            ];
+        }
+    @endphp
+
+    @if ($toast)
+        <div class="toast-region" aria-live="assertive">
+            <div class="toast-card toast-{{ $toast['type'] }}" id="toast" role="alert">
+                <span class="toast-icon"><i class="bi {{ $toast['icon'] }}"></i></span>
+                <div class="toast-body">
+                    <p class="toast-title">{{ $toast['title'] }}</p>
+                    <p class="toast-text">{{ $toast['text'] }}</p>
+                </div>
+                <button type="button" class="toast-close" aria-label="Tutup notifikasi">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <span class="toast-bar"></span>
+            </div>
+        </div>
+    @endif
+
     <script>
         // Tombol tampilkan / sembunyikan password
         document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {
@@ -409,6 +539,29 @@
                 btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
             });
         });
+
+        // Popup notifikasi: tutup otomatis, bisa ditutup manual atau dengan Esc
+        (function () {
+            var toast = document.getElementById('toast');
+            if (!toast) return;
+
+            var closed = false;
+            function closeToast() {
+                if (closed) return;
+                closed = true;
+                toast.classList.add('is-leaving');
+                setTimeout(function () { toast.parentNode && toast.parentNode.remove(); }, 260);
+            }
+
+            toast.querySelector('.toast-close').addEventListener('click', closeToast);
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeToast(); });
+
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                setTimeout(closeToast, 6000);
+            } else {
+                toast.querySelector('.toast-bar').addEventListener('animationend', closeToast);
+            }
+        })();
     </script>
     @stack('scripts')
 </body>

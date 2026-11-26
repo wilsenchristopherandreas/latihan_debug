@@ -6,14 +6,9 @@
     <h1 class="auth-title">Masuk ke akunmu</h1>
     <p class="auth-sub">Masukkan email dan password untuk membuka data absensi.</p>
 
-    @if (session('success'))
-        <div class="notice" role="status">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
+    @php $failed = session()->has('toast_error'); @endphp
 
-    <form method="POST" action="{{ route('login.store') }}">
+    <form method="POST" action="{{ route('login.store') }}" class="{{ $failed ? 'shake' : '' }}">
         @csrf
 
         <div class="field">
@@ -24,12 +19,12 @@
                     type="email"
                     id="email"
                     name="email"
-                    class="form-control auth-input @error('email') is-invalid @enderror"
+                    class="form-control auth-input{{ ($failed || $errors->has('email')) ? ' is-invalid' : '' }}"
                     value="{{ old('email') }}"
                     placeholder="nama@email.com"
                     autocomplete="email"
                     required
-                    autofocus
+                    {{ $failed ? '' : 'autofocus' }}
                 >
             </div>
             @error('email')
@@ -45,10 +40,11 @@
                     type="password"
                     id="password"
                     name="password"
-                    class="form-control auth-input @error('password') is-invalid @enderror"
+                    class="form-control auth-input{{ ($failed || $errors->has('password')) ? ' is-invalid' : '' }}"
                     placeholder="Masukkan password"
                     autocomplete="current-password"
                     required
+                    {{ $failed ? 'autofocus' : '' }}
                 >
                 <button type="button" class="toggle-pass" data-toggle-password="password" aria-label="Tampilkan password">
                     <i class="bi bi-eye"></i>

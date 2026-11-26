@@ -74,8 +74,10 @@ class AuthController extends Controller
             return redirect()->intended(route('absensi.index'));
         }
 
+        // Gagal login -> tampilkan popup notifikasi (lihat layouts/auth.blade.php)
         return back()
-            ->withErrors(['email' => 'Email atau password tidak cocok.'])
+            ->with('toast_title', 'Login gagal')
+            ->with('toast_error', 'Email atau password yang kamu masukkan salah. Coba cek lagi ya.')
             ->onlyInput('email');
     }
 
